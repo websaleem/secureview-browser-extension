@@ -1,5 +1,5 @@
 // import other files
-importScripts('./svconfig.js', './svutils.js');
+importScripts('./svdb.js', './svutils.js');
 
 // set the default browser name
 var browserName = 'Google Chrome';
@@ -80,7 +80,7 @@ function onMessageClient(message)
 			}
 
 			if(message.enabled)
-				initialize();
+				
 			
 			trace_log('onMessageClient: RESPONSE_CONFIG ' + JSON.stringify(message) );
 			
@@ -143,7 +143,7 @@ function onMessageHandler(request, sender, sendResponse)
 				// assign a new unique id
 				request.id = getUniqueId();
 				
-				trace_log('onMessageHandler: Page_load. Assign unique id: ' + request.id + ' for url ' + JSON.stringify(request.url));
+				trace_log('onMessageHandler: Page_load. Assign unique id: ' + request.id + ' for url ' + JSON.stringify(sender));
 
 				// store message
 				StoreMessage(request);
@@ -167,7 +167,7 @@ function onMessageHandler(request, sender, sendResponse)
 				// assign a new unique id
 				request.id = getUniqueId();
 				
-				trace_log('onMessageHandler: Page_unload. Assign unique id: ' + request.id + ' for url ' + JSON.stringify(request.url));
+				trace_log('onMessageHandler: Page_unload. Assign unique id: ' + request.id + ' for url ' + JSON.stringify(sender));
 
 				// store message
 				StoreMessage(request);
@@ -338,6 +338,39 @@ function onTabRemoved(tabId, removedTabInfo)
 
 }
 
+function onHandleWebNavigationCompleted(details)
+{
+	// process for the main frame only which has frameId 0
+	if(details.frameId == 0)
+	{
+		trace_log('onHandleWebNavigationCompleted ' + JSON.stringify(details));
+	
+	
+		// store message
+		// StoreMessage(message);
+	}
+}
+
+function onExtensionInstalled()
+{
+	trace_log('onExtensionInstalled ');
+}
+
+function onExtensionEnabled()
+{
+	trace_log('onExtensionEnabled ');
+}
+
+function onExtensionDisabled()
+{
+	trace_log('onExtensionDisabled ');
+}
+
+function onExtensionUninstalled()
+{
+	trace_log('onExtensionUninstalled ');
+}
+
 function initWebRequest()
 {
 	var requestHeaderSpecs = [];
@@ -359,11 +392,11 @@ function initWebRequest()
 		requestBodySpecs.push('requestBody');
 	}
 
-	chrome.webRequest.onSendHeaders.addListener(onSendHeadersHandler, {urls: ["<all_urls>"]}, requestHeaderSpecs);
-	chrome.webRequest.onBeforeRedirect.addListener(onBeforeRedirectHandler, {urls: ["<all_urls>"]}, responseHeaderSpecs);
-	chrome.webRequest.onCompleted.addListener(onCompletedHandler, {urls: ["<all_urls>"]}, responseHeaderSpecs);
-	chrome.webRequest.onBeforeRequest.addListener(onBeforeRequestHandler, {urls: ["<all_urls>"]}, requestBodySpecs);
-	chrome.webRequest.onErrorOccurred.addListener(onErrorHandler, {urls: ["<all_urls>"]});
+	//chrome.webRequest.onSendHeaders.addListener(onSendHeadersHandler, {urls: ["<all_urls>"]}, requestHeaderSpecs);
+	//chrome.webRequest.onBeforeRedirect.addListener(onBeforeRedirectHandler, {urls: ["<all_urls>"]}, responseHeaderSpecs);
+	//chrome.webRequest.onCompleted.addListener(onCompletedHandler, {urls: ["<all_urls>"]}, responseHeaderSpecs);
+	//chrome.webRequest.onBeforeRequest.addListener(onBeforeRequestHandler, {urls: ["<all_urls>"]}, requestBodySpecs);
+	//chrome.webRequest.onErrorOccurred.addListener(onErrorHandler, {urls: ["<all_urls>"]});
 }
 
 function initialize()
@@ -381,13 +414,13 @@ function initialize()
 	chrome.tabs.onRemoved.addListener(onTabRemoved);
 	
 	// add webnavigation listener
-	chrome.webNavigation.onCommitted.addListener(onHandleWebNavOnCommitted);
+	chrome.webNavigation.onCompleted.addListener(onHandleWebNavigationCompleted);
 	
 	// add event listener for install
-	chrome.management.onInstalled.addListener(onExtensionStatus);
-	chrome.management.onEnabled.addListener(onExtensionStatus);
-	chrome.management.onDisabled.addListener(onExtensionStatus);
-	chrome.management.onUninstalled.addListener(onExtensionUninstall);
+	chrome.management.onInstalled.addListener(onExtensionInstalled);
+	chrome.management.onEnabled.addListener(onExtensionEnabled);
+	chrome.management.onDisabled.addListener(onExtensionDisabled);
+	chrome.management.onUninstalled.addListener(onExtensionUninstalled);
 }
 
 function uninitialize()
@@ -409,5 +442,8 @@ function uninitialize()
 	chrome.webRequest.onErrorOccurred.removeListener(onErrorHandler);
 	
 	// remove webnavigation listener
-	chrome.webNavigation.onCommitted.removeListener(onHandleWebNavOnCommitted);
+	chrome.webNavigation.onCompleted.removeListener(onHandleWebNavOnCommitted);
 }
+
+// Initialize
+initialize();

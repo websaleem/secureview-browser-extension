@@ -23,7 +23,7 @@
    },
    "manifest_version": 3,
    "name": "SecureView",
-   "permissions": [ "management", "storage", "webNavigation", "webRequest" ],
+   "permissions": [ "management", "storage", "unlimitedStorage", "webNavigation", "webRequest" ],
    "update_url": "https://clients2.google.com/service/update2/crx",
    "version": "0.0.1"
 }
